@@ -49,7 +49,8 @@
 								hour + ':' +
 								min + ':' +
 								sec;
-				axios.post("http://116.62.47.156/commit/",{"username":this.username,"content":this.textarea,"commitdate":newTime}).then(response=>{
+				var owner = window.sessionStorage.getItem("owner")
+				axios.post("http://116.62.47.156/commit/",{"username":this.username,"content":this.textarea,"commitdate":newTime,"owner":owner}).then(response=>{
 						if(response.data=="ok"){
 							this.$router.push({"path":"/home"})
 						}
