@@ -1,7 +1,7 @@
 <template>
   <div id="app">
 	  <router-view v-if="isreflash"></router-view>
-	<div class="tab">
+	<div class="tab" v-if="islogin()">
 		
 			<el-button type="primary" style="flex: 1;margin: 0;" @click="toworld"><i class="fa fa-globe" aria-hidden="true" style="font-size: 1.4rem;"></i></el-button>
 			<el-button type="primary" style="flex: 1;margin: 0;" @click="tohome"><i class="fa fa-home" aria-hidden="true" style="font-size: 1.4rem;"></i></el-button>
@@ -19,7 +19,14 @@
 			}
 		},
 		methods:{
-			
+			islogin(){
+				if(this.$router.history.current.name=="login"){
+					return false
+				}
+				else{
+					return true
+				}
+			},
 			tofriends(){
 				if(this.$router.history.current.name=="friends"){
 					console.log(this.$router.history.current.name)

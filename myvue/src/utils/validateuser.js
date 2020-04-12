@@ -15,7 +15,7 @@ export var validateuser = function (){
 					Vue.username = username
 				}
 				else{
-					window.location = "/"
+					window.location = "./"
 				}
 		}).catch(error=>{
 					console.log(error)

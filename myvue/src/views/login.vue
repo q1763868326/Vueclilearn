@@ -87,6 +87,7 @@
 						if(response.data=="ok"){
 							this.$cookies.set("username",this.username)
 							this.$cookies.set("password",password)
+							window.sessionStorage.setItem("owner",this.username)
 							this.$router.push({path:"/home"});
 						}else{
 							this.tips="用户名或密码错误！"
