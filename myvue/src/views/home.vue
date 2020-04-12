@@ -1,6 +1,7 @@
 <template>
 	<div id="app_content">
-		<div style="font-size: 2rem;color: #409EFF;">{{username}},欢迎你!</div>
+		<div style="font-size: 2rem;color: #409EFF;">{{title}}</div>
+		<div v-if="isempty">{{tips}}</div>
 		<div id="box"  v-infinite-scroll="load" infinite-scroll-distance="2" infinite-scroll-disabled="busy">
 				<div class="card infinite-list-item" v-for="(item,index) in data" :key="index" :class="index">
 					<div style="align-self: flex-start; font-size: 0.9rem; font-weight: 700;">{{item["username"]}}:</div>
@@ -10,11 +11,17 @@
 				<i class="el-icon-loading" style="font-size: 2rem;" v-show="busy"></i>
 				<!-- <i v-show="over">没有更多了</i> -->
 		</div>
+		<!-- <div class="tab">
 			
+				<el-button type="primary" style="flex: 1;margin: 0;"><i class="fa fa-globe" aria-hidden="true" style="font-size: 1.4rem;"></i></el-button>
+				<el-button type="primary" style="flex: 1;margin: 0;"><i class="fa fa-home" aria-hidden="true" style="font-size: 1.4rem;"></i></el-button>
+				<el-button type="primary" style="flex: 1;margin: 0;"><i class="fa fa-address-book" aria-hidden="true" style="font-size: 1.4rem;"></i></el-button>
+		</div> -->
+				
 			<div class="btn_comment">
 				<circle-menu type="top" :number='2' :colors="[ '#409EFF', '#F56C6C', '#67C23A', '#F3825F', '#F19584']" mask='white' btn circle >					
-				    <router-link to="/comment" slot="item_2"><i class="el-icon-s-promotion"></i></router-link>
-					<div @click="exit" slot="item_1"><router-link to="/" ><i class="el-icon-switch-button"></i></router-link></div>
+				    <router-link to="/comment" slot="item_2"><i class="el-icon-s-promotion" style="font-size: 1.3rem;"></i></router-link>
+					<div @click="exit" slot="item_1"><router-link to="/" ><i class="el-icon-switch-button" style="font-size: 1.1rem;"></i></router-link></div>
 				</circle-menu>
 			</div>	
 	</div>
@@ -23,32 +30,25 @@
 <script>
 	import CircleMenu from 'vue-circle-menu'
 	import axios from "axios"
+	import {validateuser} from "../utils/validateuser.js"
 	export default{
 		data(){
 			return {
+				title:"",
 				username:"",
 				count:0,
 				busy:false,
 				data:[],
-				over:false
+				over:false,
+				tips:"还没有留言，留个言再走吧！",
+				isempty:false
 			}
 		},
 		components: {
 		  CircleMenu
 		},
 		created() {
-			let username = this.$cookies.get("username")	
-			let password = this.$cookies.get("password")
-			axios.post("http://116.62.47.156/login/",{"username":username,"password":password}).then(response=>{
-				if(response.data=="ok"){
-					this.username = username
-				}
-				else{
-					this.$router.push({path:"/"});
-				}
-		}).catch(error=>{
-					console.log(error)
-				})
+			validateuser()
 		},
 		mounted() {
 			this.requestdata()
@@ -57,20 +57,37 @@
 			exit(){
 				this.$cookies.remove("username")
 				this.$cookies.remove("password")
+				window.sessionStorage.clear()
 			},
 			load(){
-				setTimeout(() => {
-						this.busy = true;
-				        this.count+=1
-				        this.busy = false;
-				      }, 1000);
+				// setTimeout(() => {
+				// 		this.busy = true;
+				//         this.count+=1
+				//         this.busy = false;
+				//       }, 1000);
 				
 			},
 			requestdata(){
 				let username = this.$cookies.get("username")
+				if(!window.sessionStorage.getItem("owner")){
+					window.sessionStorage.setItem("owner",username)
+					this.title="我的留言板"
+					}
+				else if(window.sessionStorage.getItem("owner")==username){
+					this.title="我的留言板"
+				}
+				else{
+					this.title=window.sessionStorage.getItem("owner")+"的留言板"
+				}
+				var owner = window.sessionStorage.getItem("owner")
 				let password = this.$cookies.get("password")
-				axios.post("http://116.62.47.156/pullcomment/",{"username":username,"password":password}).then(response=>{
+				axios.post("http://116.62.47.156/pullcomment/",{"owner":owner}).then(response=>{
+					if(response.data["comment"]){
 						this.data=response.data["comment"].reverse()
+					}
+						else{
+							this.isempty=true
+						}
 				}).catch(error=>{
 							console.log(error)
 						})
@@ -145,11 +162,7 @@
 	
 	#box{
 		position: absolute;
-		height: 98%;
-		width: 99%;
-		overflow-y: auto;
-	}
-	#app_content{
+		width: 95%;
 		overflow-y: auto;
 	}
 	
